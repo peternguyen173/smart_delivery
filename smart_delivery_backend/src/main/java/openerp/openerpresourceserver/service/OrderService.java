@@ -1,0 +1,40 @@
+package openerp.openerpresourceserver.service;
+
+import jakarta.transaction.Transactional;
+import openerp.openerpresourceserver.dto.*;
+import openerp.openerpresourceserver.entity.Order;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+
+public interface OrderService {
+    Order createOrder(Principal principal, OrderRequestDto order);
+
+
+    // Get all orders method
+    List<OrderSummaryDTO> getAllOrders();
+
+    // Get order by ID method
+    OrderResponseDto getOrderById(UUID orderId);
+
+
+    // Edit order method
+    @Transactional
+    Order editOrder(UUID orderId, OrderRequestDto orderREQ);
+
+    // Delete order method
+    @Transactional
+    void deleteOrder(UUID orderId);
+
+    List<OrderSummaryDTO> getAllOrdersByHubIdToday(UUID hubId);
+
+    List<OrderSummaryDTO> getAllOrdersByHubId(UUID hubId);
+
+    List<OrderResponseDto> autoAssignOrderToCollector(UUID hubId, List<OrderRequestDto> orders, List<EmployeeDTO> collectors);
+
+    List<TodayAssignmentDto> getAssignmentTodayByHubId(UUID hubId);
+
+    List<AssignOrderCollectorDTO> getAssignmentTodayByCollectorId(UUID collectorId);
+}
