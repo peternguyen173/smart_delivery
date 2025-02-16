@@ -22,11 +22,12 @@ import java.util.UUID;
 public class Driver extends Employee{
     private String licenseNumber;
     private Enum<EmploymentStatus> employment_status;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Hub originHub;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Hub finalHub;
+
+    private UUID originHubId;
+    private String originHubName;
+
+    private UUID finalHubId;
+    private String finalHubName;
+
 
 }

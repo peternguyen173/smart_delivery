@@ -19,26 +19,15 @@ public class OrderItem {
     @GenericGenerator(name = "uuid1", strategy = "org.hibernate.id.UUIDGenerator")
     @GeneratedValue
     private UUID orderItemId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "order_id")
-    private Order order;
-
+    private UUID orderId;
     @Column(nullable = false)
     private String name;
-
     private Long quantity;
-
     @Column(nullable = false)
     private Double weight;
-
     private Double price;
-
     private Double length;
-
     private Double width;
-
     private Double height;
 
     public OrderItem(String name, Long quantity, Double weight, Double price, Double length, Double width, Double height) {

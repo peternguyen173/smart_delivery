@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import openerp.openerpresourceserver.entity.Order;
 import openerp.openerpresourceserver.entity.Recipient;
 import openerp.openerpresourceserver.entity.Sender;
+import openerp.openerpresourceserver.repository.SenderRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -17,10 +19,12 @@ import java.util.UUID;
 @Builder
 public class OrderSummaryDTO {
 
+
+
     public OrderSummaryDTO(Order order){
         this.id = order.getId();
-        this.sender = order.getSender().getName();
-        this.recipient = order.getRecipient().getName();
+        this.senderId = order.getSenderId();
+        this.recipientId = order.getRecipientId();
         this.orderType = order.getOrderType();
         this.status = String.valueOf(order.getStatus());
         this.totalPrice = order.getTotalPrice();
@@ -30,8 +34,10 @@ public class OrderSummaryDTO {
     }
 
     private UUID id;
-    private String sender;
-    private String recipient;
+    private UUID senderId;
+    private UUID recipientId;
+    private UUID senderName;
+    private UUID recipientName;
     private String orderType;
     private String status;
     private Double totalPrice;

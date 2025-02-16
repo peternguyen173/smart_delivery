@@ -20,41 +20,31 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "smartdelivery_recipient")
 public class Recipient {
-    public Recipient(String name, String phone, String email, String address){
-        this.name = name;
-        this.phone = phone;
-        this.email = email;
-        this.address = address;
-    }
+
     @Id
     @GenericGenerator(name = "uuid1", strategy = "org.hibernate.id.UUIDGenerator")
     @GeneratedValue(generator = "uuid1")
     private UUID recipientId;
-
     private String name;
-
     private String username;
-
     private String password;
-
     private String email;
-
     private String phone;
-
     private String address;
-
     private Double longitude;
-
     private Double latitude;
-
-    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Order> orders;
 
     @CreatedDate
     private Date createdAt;
 
     @LastModifiedDate
     private Date updatedAt;
+
+    public Recipient(String name, String phone, String email, String address){
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.address = address;
+    }
 
 }

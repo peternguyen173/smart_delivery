@@ -1,19 +1,32 @@
 package openerp.openerpresourceserver.utils.GAAutoAssign;
 
+import jakarta.ws.rs.NotFoundException;
 import openerp.openerpresourceserver.entity.Order;
+import openerp.openerpresourceserver.entity.Sender;
+import openerp.openerpresourceserver.repository.SenderRepo;
 import openerp.openerpresourceserver.utils.DistanceCalculator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+@Component
 public class Individual {
+
+    @Autowired
+    private SenderRepo senderRepo;
+
     private ArrayList<Integer> chromosome;
     private double fitness;
     private int numOfOrder;
     private int numOfCollector;
     private List<Order> orderList;
+
+    public Individual(){
+    }
 
     public Individual(int numOfOrder, int numOfCollector, List<Order> orderList) {
         this.fitness = -1;
@@ -52,11 +65,14 @@ public class Individual {
 
             for (int i = 1; i < orderNumbers.size(); i++) {
                 Integer nextOrderNumber = orderNumbers.get(i);
+                Sender sender1 =  senderRepo.findById(orderList.get(currentOrderNumber).getSenderId()).orElseThrow(() -> new NotFoundException("Sender not found"));
+                Sender sender2 =  senderRepo.findById(orderList.get(nextOrderNumber).getSenderId()).orElseThrow(() -> new NotFoundException("Sender not found"));
+
                 totalDistance += DistanceCalculator.calculateDistance(
-                        orderList.get(currentOrderNumber).getSender().getLatitude(),
-                        orderList.get(currentOrderNumber).getSender().getLongitude(),
-                        orderList.get(nextOrderNumber).getSender().getLatitude(),
-                        orderList.get(nextOrderNumber).getSender().getLongitude()
+                        sender1.getLatitude(),
+                        sender1.getLongitude(),
+                        sender2.getLatitude(),
+                        sender2.getLongitude()
                 );
                 currentOrderNumber = nextOrderNumber;
             }

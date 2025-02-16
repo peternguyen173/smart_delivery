@@ -16,13 +16,9 @@ public class AssignOrderCollectorHistory {
     @GeneratedValue(generator = "uuid1")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="order_id", nullable = false)
-    private Order order;
+    private UUID orderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="collector_id", nullable = false)
-    private Collector collector;
+    private UUID collectorId;
 
     private Long version;
 

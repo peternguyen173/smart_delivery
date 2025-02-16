@@ -25,50 +25,16 @@ public class Hub {
     @GenericGenerator(name = "uuid1", strategy = "org.hibernate.id.UUIDGenerator")
     @GeneratedValue(generator = "uuid1")
     private UUID hubId;
-
     private String name;
-
     private String code;
-
     private Double longitude;
-
     private Double latitude;
-
     private String address;
-
     private String district;
-
     private String city;
-
     private Double width;
-
     private Double length;
 
-
-    @OneToMany(mappedBy = "hub", cascade = {CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval = true)
-    @JsonIgnore
-    private List<Shipper> shipperList;
-
-    @OneToMany(mappedBy = "hub", cascade = {CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval = true)
-    @JsonIgnore
-    private List<Collector> collectorList;
-
-
-    @OneToMany(mappedBy = "originHub")
-    @JsonIgnore
-    private List<Driver> originDriverList;
-
-    @OneToMany(mappedBy = "finalHub")
-    @JsonIgnore
-    private List<Driver> finalDriverList;
-
-    @OneToMany(mappedBy = "originHub")
-    @JsonIgnore
-    private List<Order> originHubOrders;
-
-    @OneToMany(mappedBy = "finalHub")
-    @JsonIgnore
-    private List<Order> finalHubOrders;
 
     @CreatedDate
     private Date createdAt;

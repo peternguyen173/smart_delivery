@@ -64,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
         Sender sender = senderRepo.findByNameAndPhone(orderREQ.getSenderName(),orderREQ.getSenderPhone());
         Recipient recipient = recipientRepo.findByNameAndPhone(orderREQ.getRecipientName(), orderREQ.getRecipientPhone());
 
+
         if (sender == null) {
             sender = new Sender(orderREQ.getSenderName(), orderREQ.getSenderPhone(), orderREQ.getSenderEmail(), orderREQ.getSenderAddress());
             sender.setLatitude(orderREQ.getSenderLatitude());
@@ -80,20 +81,21 @@ public class OrderServiceImpl implements OrderService {
         orderEntity.setTotalPrice(orderREQ.getTotalPrice());
         orderEntity.setShippingPrice(orderREQ.getShippingPrice());
         orderEntity.setFinalPrice(orderREQ.getFinalPrice());
-        orderEntity.setSender(sender);
-        orderEntity.setRecipient(recipient);
+        orderEntity.setSenderId(sender.getSenderId());
+        orderEntity.setRecipientId(recipient.getRecipientId());
         orderEntity.setOrderType(orderREQ.getOrderType());
         orderEntity.setOrderType(orderREQ.getOrderType());
         List<OrderItem> orderItems = new ArrayList<>();
         List<OrderItem> items = orderREQ.getItems();
 
         for (OrderItem item : items) {
-            OrderItem orderItem = new OrderItem(item.getName(), item.getQuantity(), item.getWeight(), item.getPrice(), item.getLength(), item.getWidth(), item.getHeight());
-            orderItem.setOrder(orderEntity);
-            orderItems.add(orderItem);
+//            OrderItem orderItem = new OrderItem(item.getName(), item.getQuantity(), item.getWeight(), item.getPrice(), item.getLength(), item.getWidth(), item.getHeight());
+            item.setOrderId(orderEntity.getId());
+            orderItems.add(item);
         }
 
-        orderEntity.setItems(orderItems);
+        orderItemRepo.saveAll(orderItems);
+
         orderEntity.setCreatedBy(principal.getName());
         logger.info("Created Order: {}", orderEntity);
 
@@ -123,7 +125,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderSummaryDTO> getAllOrdersByHubId(UUID hubId) {
-        List<Order> orderList = orderRepo.findByOriginHub_HubIdOrderByCreatedAtDesc(hubId);
+        List<Order> orderList = orderRepo.findByOriginHubIdOrderByCreatedAtDesc(hubId);
         List<OrderSummaryDTO> orderSummaries = new ArrayList<>();
         for (Order order : orderList) {
             // Thêm vào danh sách orderResponses
@@ -137,15 +139,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto getOrderById(UUID orderId) {
         Order order = orderRepo.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+        List<OrderItem> orderItems = orderItemRepo.findAllByOrderId(order.getId());
         OrderResponseDto orderResponseDto = OrderResponseDto.builder()
                 .id(order.getId())
-                .sender(order.getSender())
-                .recipient(order.getRecipient())
-                .collector(order.getCollector())
-                .shipper(order.getShipper())
-                .items(order.getItems())
+                .senderId(order.getSenderId())
+                .senderName(order.getSenderName())
+                .recipientId(order.getRecipientId())
+                .recipientName(order.getRecipientName())
+                .collectorId(order.getCollectorId())
+                .collectorName(order.getCollectorName())
+                .shipperId(order.getShipperId())
+                .shipperName(order.getShipperName())
+                .items(orderItems)
                 .orderType(order.getOrderType())
-                .collectorName(order.getCollector() != null ? order.getCollector().getName() : "")
+                .collectorName(order.getCollectorName())
                 .status(order.getStatus())
                 .totalPrice(order.getTotalPrice())
                 .shippingPrice(order.getShippingPrice())
@@ -178,20 +185,23 @@ public class OrderServiceImpl implements OrderService {
             recipient = new Recipient(orderREQ.getRecipientName(), orderREQ.getRecipientPhone(), orderREQ.getRecipientEmail(), orderREQ.getRecipientAddress());
         }
 
-        existingOrder.setSender(sender);
-        existingOrder.setRecipient(recipient);
+        existingOrder.setSenderId(sender.getSenderId());
+        existingOrder.setSenderName(sender.getName());
+        existingOrder.setRecipientId(recipient.getRecipientId());
+        existingOrder.setRecipientName(recipient.getName());
         existingOrder.setTotalPrice(orderREQ.getTotalPrice());
         existingOrder.setShippingPrice(orderREQ.getShippingPrice());
         existingOrder.setFinalPrice(orderREQ.getFinalPrice());
         existingOrder.setOrderType(orderREQ.getOrderType());
         // Clear existing items and add new ones
-        existingOrder.getItems().clear(); // Làm sạch danh sách để thêm mới
+        List<OrderItem> orderItems = new ArrayList<>();
         for (OrderItem item : orderREQ.getItems()) {
             OrderItem newOrderItem = new OrderItem(item.getName(), item.getQuantity(), item.getWeight(), item.getPrice(), item.getLength(), item.getWidth(), item.getHeight());
-            newOrderItem.setOrder(existingOrder);
-            existingOrder.getItems().add(newOrderItem);
+            newOrderItem.setOrderId(existingOrder.getId());
+            orderItems.add(newOrderItem);
         }
         existingOrder.setStatus(OrderStatus.PENDING);
+        orderItemRepo.saveAll(orderItems);
 
         return orderRepo.save(existingOrder);
     }
@@ -231,7 +241,9 @@ public class OrderServiceImpl implements OrderService {
             Order order = orderRepo.findById(orderRequest.getId()).orElseThrow(() ->
                     new NotFoundException("Not found order")
             );
-            Double distance = calculateDistance(hubLat, hubLon, order.getSender().getLatitude(), order.getSender().getLongitude());
+            Sender sender = senderRepo.findById(order.getSenderId()).orElseThrow(() -> new NotFoundException("not found sender"));
+
+            Double distance = calculateDistance(hubLat, hubLon, sender.getLatitude(), sender.getLongitude());
             order.setDistance(distance);
             orderRepo.save(order);
             orderList.add(order);
@@ -301,15 +313,16 @@ public class OrderServiceImpl implements OrderService {
                 endOfDay
         );
 
+
+
         // Chuyển đối tượng AssignOrderCollector thành TodayAssignmentDto
         return assignments.stream()
                 .collect(Collectors.toMap(
-                        assignment -> assignment.getCollector().getId(), // Group by collectorId
+                        assignment -> assignment.getCollectorId(), // Group by collectorId
                         assignment -> TodayAssignmentDto.builder()
-                                .collectorId(assignment.getCollector().getId()) // ID của collector
-                                .collectorName(assignment.getCollector().getName()) // Tên collector
-                                .numOfOrders(countOrdersForCollector(assignments, assignment.getCollector().getId())) // Số đơn hàng
-                                .collectorPhone(assignment.getCollector().getPhone()) // Số điện thoại
+                                .collectorId(assignment.getCollectorId()) // ID của collector
+                                .collectorName(assignment.getCollectorName()) // Tên collector
+                                .numOfOrders(countOrdersForCollector(assignments, assignment.getCollectorId())) // Số đơn hàng
                                 .status("ASSIGNED") // Trạng thái
                                 .build(),
                         (existing, replacement) -> existing) // Nếu có trùng lặp, giữ lại bản ghi đầu tiên
@@ -321,7 +334,7 @@ public class OrderServiceImpl implements OrderService {
     // Phương thức đếm số đơn hàng cho collectorId trong danh sách assignments
     private Long countOrdersForCollector(List<AssignOrderCollector> assignments, UUID collectorId) {
         return assignments.stream()
-                .filter(assignment -> assignment.getCollector().getId().equals(collectorId)) // Lọc các assignment theo collectorId
+                .filter(assignment -> assignment.getCollectorId().equals(collectorId)) // Lọc các assignment theo collectorId
                 .count(); // Đếm số lượng
     }
 

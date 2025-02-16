@@ -20,10 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "smartdelivery_shipper")
 public class Shipper extends Employee{
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Hub hub;
-    @OneToMany(mappedBy = "shipper", fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    @JsonIgnore
-    private List<Order> orders;
+
+    private UUID hubId;
+    private String hubName;
 }

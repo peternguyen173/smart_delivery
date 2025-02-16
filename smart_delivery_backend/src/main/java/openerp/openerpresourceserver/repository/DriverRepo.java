@@ -8,6 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DriverRepo extends JpaRepository<Driver, UUID> {
-    @Query("SELECT d FROM Driver d WHERE d.originHub.hubId = :hubId")
+    @Query("SELECT d FROM Driver d WHERE d.originHubId = :hubId")
     List<Driver> getAllByHubId(UUID hubId);
 }

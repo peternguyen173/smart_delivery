@@ -19,9 +19,7 @@ public class TripOrder {
     @GeneratedValue(generator = "uuid1")
     private UUID tripOrderId;
 
-    @OneToOne
-    private Trip tripId;
+    private UUID tripId;
 
-    @OneToOne
-    private Order orderId;
+    private UUID orderId;
 }

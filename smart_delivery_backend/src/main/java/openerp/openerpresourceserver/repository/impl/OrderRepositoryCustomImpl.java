@@ -1,7 +1,7 @@
-package openerp.openerpresourceserver.repository;
+package openerp.openerpresourceserver.repository.impl;
 
 import openerp.openerpresourceserver.dto.OrderSummaryDTO;
-import openerp.openerpresourceserver.entity.Order;
+import openerp.openerpresourceserver.repository.OrderRepositoryCustom;
 import openerp.openerpresourceserver.utils.SqlQueryUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public class OrderRepositoryCustomImpl implements OrderRepositoryCustom{
+public class OrderRepositoryCustomImpl implements OrderRepositoryCustom {
 
     @Autowired
     private SqlQueryUtil sqlQueryUtil;
@@ -28,4 +28,6 @@ public class OrderRepositoryCustomImpl implements OrderRepositoryCustom{
 
         return sqlQueryUtil.queryForList(SQL.toString(), params, OrderSummaryDTO.class);
     }
+
+
 }

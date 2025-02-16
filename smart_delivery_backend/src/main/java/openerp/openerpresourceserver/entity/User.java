@@ -24,13 +24,9 @@ public class User {
     @Id
     @Column(name = "user_login_id", updatable = false, nullable = false)
     private String id;
-
     private String email;
-
     private String firstName;
-
     private String lastName;
-
     private boolean enabled;
 
     @CreatedDate

@@ -71,8 +71,8 @@ public class GAAutoAssign {
                 for (Order order : entry.getValue()) {
                     // Lưu kết quả vào bảng AssignOrderCollector
                     AssignOrderCollector assignment = new AssignOrderCollector();
-                    assignment.setOrder(order);
-                    assignment.setCollector(collector);
+                    assignment.setOrderId(order.getId());
+                    assignment.setCollectorId(collector.getId());
                     // Set các trường khác nếu cần (như createdBy, approvedBy, v.v.)
                     assignment.setCreatedBy("admin"); // Example, bạn có thể thay đổi
 
@@ -89,7 +89,7 @@ public class GAAutoAssign {
                 for (Order order : entry.getValue()) {
                     responses.add(new OrderResponseDto().builder()
                             .id(order.getId())
-                            .collector(collector)
+                            .collectorId(collector.getId())
                             .build());
                 }
             }

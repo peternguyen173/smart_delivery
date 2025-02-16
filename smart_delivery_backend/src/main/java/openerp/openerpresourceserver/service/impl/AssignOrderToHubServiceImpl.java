@@ -1,9 +1,12 @@
 package openerp.openerpresourceserver.service.impl;
 
+import jakarta.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 import openerp.openerpresourceserver.entity.Hub;
 import openerp.openerpresourceserver.entity.Order;
+import openerp.openerpresourceserver.entity.Sender;
 import openerp.openerpresourceserver.repository.HubRepo;
+import openerp.openerpresourceserver.repository.SenderRepo;
 import openerp.openerpresourceserver.service.AssignOrderToHubService;
 import openerp.openerpresourceserver.utils.DistanceCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +20,14 @@ public class AssignOrderToHubServiceImpl implements AssignOrderToHubService {
 
     @Autowired
     private HubRepo hubRepo;
+    @Autowired
+    private SenderRepo senderRepo;
 
     @Override
     public void assignOrderToHub(Order order){
-        Double x1 = order.getSender().getLatitude();
-        Double y1 = order.getSender().getLongitude();
+        Sender sender = senderRepo.findById(order.getSenderId()).orElseThrow(() -> new NotFoundException("sender not found"));
+        Double x1 = sender.getLatitude();
+        Double y1 = sender.getLongitude();
 
         List<Hub> hubs = hubRepo.findAll();
 
@@ -38,7 +44,7 @@ public class AssignOrderToHubServiceImpl implements AssignOrderToHubService {
             }
         }
         if (assignedHub != null) {
-            order.setOriginHub(assignedHub);
+            order.setOriginHubId(assignedHub.getHubId());
             order.setDistance(min);
         } else {
             // Xử lý trường hợp không tìm thấy hub gần nhất

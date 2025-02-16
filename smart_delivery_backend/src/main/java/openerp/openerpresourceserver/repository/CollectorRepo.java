@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CollectorRepo extends JpaRepository<Collector, UUID> {
-    @Query("SELECT c FROM Collector c WHERE c.hub.hubId = :hubId")
+    @Query("SELECT c FROM Collector c WHERE c.hubId = :hubId")
     List<Collector> getAllByHubId(UUID hubId);
 
     Collector findByEmail(String email);

@@ -122,7 +122,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
             newCollector.setName(employeeRequestDto.getName());
             newCollector.setEmail(employeeRequestDto.getEmail());
             newCollector.setPhone(employeeRequestDto.getPhone());
-            newCollector.setHub(hub);
+            newCollector.setHubId(hub.getHubId());
             newCollector.setAddress(employeeRequestDto.getAddress());
             newCollector.setCity(employeeRequestDto.getCity());
             newCollector.setDistrict(employeeRequestDto.getDistrict());
@@ -136,7 +136,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
             newDriver.setName(employeeRequestDto.getName());
             newDriver.setEmail(employeeRequestDto.getEmail());
             newDriver.setPhone(employeeRequestDto.getPhone());
-            newDriver.setOriginHub(hub);
+            newDriver.setOriginHubId(hub.getHubId());
             newDriver.setAddress(employeeRequestDto.getAddress());
             newDriver.setCity(employeeRequestDto.getCity());
             newDriver.setDistrict(employeeRequestDto.getDistrict());
@@ -150,7 +150,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
             newShipper.setName(employeeRequestDto.getName());
             newShipper.setEmail(employeeRequestDto.getEmail());
             newShipper.setPhone(employeeRequestDto.getPhone());
-            newShipper.setHub(hub);
+            newShipper.setHubId(hub.getHubId());
             newShipper.setAddress(employeeRequestDto.getAddress());
             newShipper.setCity(employeeRequestDto.getCity());
             newShipper.setDistrict(employeeRequestDto.getDistrict());
@@ -186,7 +186,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 newCollector.setName(employeeRequestDto.getName());
                 newCollector.setEmail(employeeRequestDto.getEmail());
                 newCollector.setPhone(employeeRequestDto.getPhone());
-                newCollector.setHub(hub);
+                newCollector.setHubId(hub.getHubId());
                 newCollector.setAddress(employeeRequestDto.getAddress());
                 newCollector.setCity(employeeRequestDto.getCity());
                 newCollector.setDistrict(employeeRequestDto.getDistrict());
@@ -201,7 +201,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 newDriver.setName(employeeRequestDto.getName());
                 newDriver.setEmail(employeeRequestDto.getEmail());
                 newDriver.setPhone(employeeRequestDto.getPhone());
-                newDriver.setOriginHub(hub);
+                newDriver.setOriginHubId(hub.getHubId());
                 newDriver.setAddress(employeeRequestDto.getAddress());
                 newDriver.setCity(employeeRequestDto.getCity());
                 newDriver.setDistrict(employeeRequestDto.getDistrict());
@@ -216,7 +216,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 newShipper.setName(employeeRequestDto.getName());
                 newShipper.setEmail(employeeRequestDto.getEmail());
                 newShipper.setPhone(employeeRequestDto.getPhone());
-                newShipper.setHub(hub);
+                newShipper.setHubId(hub.getHubId());
                 newShipper.setAddress(employeeRequestDto.getAddress());
                 newShipper.setCity(employeeRequestDto.getCity());
                 newShipper.setDistrict(employeeRequestDto.getDistrict());
@@ -239,7 +239,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 .orElseThrow(() -> new RuntimeException("Shipper not found with id: " + shipperId));
         Hub hub = hubRepo.findById(hubId)
                 .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-        shipper.setHub(hub);
+        shipper.setHubId(hub.getHubId());
         return shipperRepo.save(shipper);
     }
 
@@ -247,11 +247,8 @@ public class HumanResourceServiceImpl implements HumanResourceService {
     public void removeShipper(UUID shipperId, UUID hubId){
         Shipper shipper = shipperRepo.findById(shipperId)
                 .orElseThrow(() -> new RuntimeException("Shipper not found with id: " + shipperId));
-        Hub hub = hubRepo.findById(hubId)
-                .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-
-        hub.getShipperList().remove(shipper);
-        hubRepo.save(hub);
+        shipper.setHubId(null);
+        shipperRepo.save(shipper);
     }
 
     @Override
@@ -260,7 +257,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 .orElseThrow(() -> new RuntimeException("Shipper not found with id: " + collectorId));
         Hub hub = hubRepo.findById(hubId)
                 .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-        collector.setHub(hub);
+        collector.setHubId(hub.getHubId());
         return collectorRepo.save(collector);
     }
 
@@ -268,12 +265,10 @@ public class HumanResourceServiceImpl implements HumanResourceService {
     public void removeCollector(UUID collectorId, UUID hubId){
         Collector collector = collectorRepo.findById(collectorId)
                 .orElseThrow(() -> new RuntimeException("Collector not found with id: " + collectorId));
-        Hub hub = hubRepo.findById(hubId)
-                .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-
-        hub.getCollectorList().remove(collector);
-        hubRepo.save(hub);
+        collector.setHubId(null);
+        collectorRepo.save(collector);
     }
+
 
     @Override
     public Driver addDriverToOriginHub(UUID driverId, UUID hubId){
@@ -281,7 +276,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 .orElseThrow(() -> new RuntimeException("Driver not found with id: " + driverId));
         Hub hub = hubRepo.findById(hubId)
                 .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-        driver.setOriginHub(hub);
+        driver.setOriginHubId(hubId);
         return driverRepo.save(driver);
     }
 
@@ -291,7 +286,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 .orElseThrow(() -> new RuntimeException("Driver not found with id: " + driverId));
         Hub hub = hubRepo.findById(hubId)
                 .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-        driver.setFinalHub(hub);
+        driver.setFinalHubId(hubId);
         return driverRepo.save(driver);
     }
 
@@ -299,20 +294,16 @@ public class HumanResourceServiceImpl implements HumanResourceService {
     public void removeDriverFromOriginHub(UUID driverId, UUID hubId){
         Driver driver = driverRepo.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found with id: " + driverId));
-        Hub hub = hubRepo.findById(hubId)
-                .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-        hub.getOriginDriverList().remove(driver);
-        hubRepo.save(hub);
+        driver.setOriginHubId(null);
+        driverRepo.save(driver);
     }
 
     @Override
     public void removeDriverFromFinalHub(UUID driverId, UUID hubId){
         Driver driver = driverRepo.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found with id: " + driverId));
-        Hub hub = hubRepo.findById(hubId)
-                .orElseThrow(() -> new RuntimeException("Hub not found with id: " + hubId));
-        hub.getFinalDriverList().remove(driver);
-        hubRepo.save(hub);
+        driver.setFinalHubId(null);
+        driverRepo.save(driver);
     }
 
     @Override
@@ -336,22 +327,7 @@ public class HumanResourceServiceImpl implements HumanResourceService {
 
     private EmployeeDetailDTO convertToResponseDTO(Collector collector) {
 
-        return new EmployeeDetailDTO(
-                collector.getId(),
-                collector.getName(),
-                collector.getUsername(),
-                collector.getPassword(),
-                collector.getEmail(),
-                collector.getPhone(),
-                collector.getAddress(),
-                collector.getCity(),
-                collector.getDistrict(),
-                collector.getWard(),
-                collector.getHub().getHubId(),
-                collector.getHub().getName()
-        );
-    }
-    private EmployeeDetailDTO convertToResponseSDTO(Shipper collector) {
+        Hub hub = hubRepo.findById(collector.getHubId()).orElseThrow(() -> new NotFoundException("Hub not found"));
 
         return new EmployeeDetailDTO(
                 collector.getId(),
@@ -364,8 +340,26 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 collector.getCity(),
                 collector.getDistrict(),
                 collector.getWard(),
-                collector.getHub().getHubId(),
-                collector.getHub().getName()
+                hub.getHubId(),
+                hub.getName()
+        );
+    }
+    private EmployeeDetailDTO convertToResponseSDTO(Shipper shipper) {
+        Hub hub = hubRepo.findById(shipper.getHubId()).orElseThrow(() -> new NotFoundException("Hub not found"));
+
+        return new EmployeeDetailDTO(
+                shipper.getId(),
+                shipper.getName(),
+                shipper.getUsername(),
+                shipper.getPassword(),
+                shipper.getEmail(),
+                shipper.getPhone(),
+                shipper.getAddress(),
+                shipper.getCity(),
+                shipper.getDistrict(),
+                shipper.getWard(),
+                hub.getHubId(),
+                hub.getName()
         );
     }
 
@@ -382,8 +376,8 @@ public class HumanResourceServiceImpl implements HumanResourceService {
                 collector.getCity(),
                 collector.getDistrict(),
                 collector.getWard(),
-                collector.getOriginHub().getHubId(),
-                collector.getOriginHub().getName()
+                collector.getOriginHubId(),
+                collector.getOriginHubName()
         );
     }
 

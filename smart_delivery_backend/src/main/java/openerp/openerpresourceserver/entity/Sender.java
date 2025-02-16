@@ -24,17 +24,11 @@ public class Sender {
     @GenericGenerator(name = "uuid1", strategy = "org.hibernate.id.UUIDGenerator")
     @GeneratedValue(generator = "uuid1")
     private UUID senderId;
-
     private String name;
-
     private String phone;
-
     private String email;
-
     private String address;
-
     private Double longitude;
-
     private Double latitude;
 
     public Sender(String name, String phone, String email, String address) {
@@ -44,10 +38,6 @@ public class Sender {
         this.address = address;
     }
 
-
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Order> orders;
 
     @CreatedDate
     private Date createdAt;

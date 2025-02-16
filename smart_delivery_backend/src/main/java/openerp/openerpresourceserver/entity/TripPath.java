@@ -23,8 +23,7 @@ public class TripPath {
     @GeneratedValue(generator = "uuid1")
     private UUID tripPathId;
 
-    @OneToOne
-    private Trip tripId;
+    private UUID tripId;
 
     private Double longitude;
 

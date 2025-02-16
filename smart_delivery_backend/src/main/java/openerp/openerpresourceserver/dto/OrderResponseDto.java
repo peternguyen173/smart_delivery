@@ -20,13 +20,16 @@ import java.util.UUID;
 @Builder
 public class OrderResponseDto {
     private UUID id;
-    private Sender sender;
-    private Recipient recipient;
-    private Collector collector;
-    private Shipper shipper;
+    private UUID senderId;
+    private String senderName;
+    private UUID recipientId;
+    private String recipientName;
+    private UUID collectorId;
+    private String collectorName;
+    private UUID shipperId;
+    private String shipperName;
     private List<OrderItem> items;
     private String orderType;
-    private String collectorName;
     private OrderStatus status;
     private Double totalPrice;
     private Double shippingPrice;

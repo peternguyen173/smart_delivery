@@ -21,15 +21,9 @@ public class AssignOrderCollector {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;  // Thay Long bằng UUID
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="order_id", nullable = false)
-    private Order order;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="collector_id", nullable = false)
-    private Collector collector;
-
+    private UUID orderId;
+    private UUID collectorId;
+    private String collectorName;
     private Long version;
 
     @CreatedBy

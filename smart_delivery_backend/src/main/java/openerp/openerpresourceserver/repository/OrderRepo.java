@@ -12,12 +12,12 @@ import java.util.UUID;
 
 @Repository
 public interface OrderRepo extends JpaRepository<Order, UUID>, OrderRepositoryCustom {
-    @Query("SELECT o FROM Order o JOIN FETCH o.sender JOIN FETCH o.recipient WHERE o.id = :orderId")
+    @Query("SELECT o FROM Order o JOIN Sender s on o.senderId = s.senderId JOIN FETCH Recipient r on r.recipientId = o.recipientId WHERE o.id = :orderId")
     Optional<Order> findByIdWithSenderAndRecipient(@Param("orderId") UUID orderId);
 
 
 
-    List<Order> findByOriginHub_HubIdOrderByCreatedAtDesc(UUID hubId);
+    List<Order> findByOriginHubIdOrderByCreatedAtDesc(UUID hubId);
 
 
 }

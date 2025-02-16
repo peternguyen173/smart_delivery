@@ -13,7 +13,11 @@ import java.util.UUID;
 
 @Repository
 public interface AssignOrderCollectorRepository extends JpaRepository<AssignOrderCollector, UUID> {
-    @Query("select a from AssignOrderCollector a JOIN FETCH a.order where a.order.originHub.hubId = :hubId and a.createdAt between :startDate and :endDate")
+    @Query("select a " +
+             "from AssignOrderCollector a " +
+             "JOIN Order o ON a.orderId = o.id " +
+             "JOIN Hub h ON o.originHubId = h.hubId " +
+             "where h.hubId = :hubId and a.createdAt between :startDate and :endDate")
     List<AssignOrderCollector> findByHubIdAndCreatedAtBetween(
             @Param("hubId") UUID hubId,
             @Param("startDate") Timestamp startDate,
@@ -21,9 +25,11 @@ public interface AssignOrderCollectorRepository extends JpaRepository<AssignOrde
     );
 
     @Query("select new openerp.openerpresourceserver.dto.AssignOrderCollectorDTO(" +
-            "a.order.id, a.order.sender.address, a.order.sender.name, a.order.sender.phone, a.order.createdAt) " +
-            "from AssignOrderCollector a JOIN a.order " +
-            "where a.collector.id = :collectorId and a.createdAt between :startDate and :endDate")
+            "a.orderId, s.address, s.name, s.phone, o.createdAt) " +
+            "from AssignOrderCollector a " +
+            "JOIN Order o ON a.orderId = o.id " +
+            "JOIN Sender s ON o.senderId = s.senderId " +  // Thêm JOIN với Sender
+            "where a.collectorId = :collectorId and a.createdAt between :startDate and :endDate")
     List<AssignOrderCollectorDTO> findByCollectorIdAndCreatedAtBetween(@Param("collectorId") UUID collectorId,
                                                                        @Param("startDate") Timestamp startDate,
                                                                        @Param("endDate") Timestamp endDate);

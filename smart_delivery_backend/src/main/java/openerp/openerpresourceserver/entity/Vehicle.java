@@ -25,24 +25,14 @@ public class Vehicle {
     @GenericGenerator(name = "uuid1", strategy = "org.hibernate.id.UUIDGenerator")
     @GeneratedValue(generator = "uuid1")
     private UUID vehicleId;
-
     private Enum<VehicleType> vehicleType;
-
     private String plateNumber;
-
     private Long capacity;
-
     private Enum<VehicleStatus> status;
-
     private String manufacturer;
-
     private String model;
-
     private String yearOfManufacture;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Driver driver;
+    private UUID driverId;
 
     @CreatedDate
     private Date createdAt;

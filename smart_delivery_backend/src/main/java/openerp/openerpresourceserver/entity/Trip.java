@@ -22,22 +22,12 @@ public class Trip {
     @GenericGenerator(name = "uuid1", strategy = "org.hibernate.id.UUIDGenerator")
     @GeneratedValue(generator = "uuid1")
     private UUID tripId;
-
-    @OneToOne
-    private Vehicle vehicleId;
-
-    @OneToOne
-    private Driver driverId;
-
+    private UUID vehicleId;
+    private UUID driverId;
     private Enum<TripStatus> status;
-
     private Double totalDistance;
-
-    @OneToOne
-    private Hub startHub;
-
-    @OneToOne
-    private Hub destinationHub;
+    private UUID startHubId;
+    private UUID destinationHubId;
 
     @CreatedDate
     private Date createdAt;
