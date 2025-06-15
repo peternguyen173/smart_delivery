@@ -72,7 +72,68 @@ const CreateOrder = () => {
         setLoading(false); // Giả lập quá trình tải dữ liệu
     }, []);
 
+    const calculateShippingPrice = (weight, length, width, height, orderType = 'Bình thường') => {
+        // Tính thể tích (m³)
+        const volume = (length * width * height) / 1000000; // chuyển từ cm³ sang m³
 
+        // Tính trọng lượng thể tích (kg) - thường dùng hệ số 200kg/m³ cho vận chuyển
+        const volumetricWeight = volume * 200;
+
+        // Lấy trọng lượng tính cước = max(trọng lượng thực tế, trọng lượng thể tích)
+        const chargeableWeight = Math.max(weight, volumetricWeight);
+
+        // Bảng giá cước cơ bản (VNĐ/kg)
+        const baseRates = {
+            'Bình thường': 15000,  // 15,000 VNĐ/kg
+            'Nhanh': 20000,       // 20,000 VNĐ/kg
+            'Hỏa tốc': 30000      // 30,000 VNĐ/kg
+        };
+
+        // Phí tối thiểu
+        const minimumFee = 20000; // 20,000 VNĐ
+
+        // Tính phí cước
+        const baseRate = baseRates[orderType] || baseRates['Bình thường'];
+        let shippingFee = chargeableWeight * baseRate;
+
+        // Áp dụng phí tối thiểu
+        shippingFee = Math.max(shippingFee, minimumFee);
+
+        // Làm tròn đến nghìn
+        shippingFee = Math.ceil(shippingFee / 1000) * 1000;
+
+        return {
+            shippingFee,
+            chargeableWeight: Math.round(chargeableWeight * 100) / 100, // làm tròn 2 chữ số thập phân
+            volumetricWeight: Math.round(volumetricWeight * 100) / 100,
+            volume: Math.round(volume * 1000000) / 1000000 // làm tròn 6 chữ số thập phân
+        };
+    };
+    useEffect(() => {
+        const { shippingFee } = calculateShippingPrice(
+            formData.weight,
+            formData.length,
+            formData.width,
+            formData.height,
+            formData.orderType
+        );
+
+        setFormData(prevData => ({
+            ...prevData,
+            shippingPrice: shippingFee,
+            finalPrice: prevData.totalPrice + shippingFee
+        }));
+    }, [formData.weight, formData.length, formData.width, formData.height, formData.orderType, formData.totalPrice]);
+
+    // Cập nhật phần hiển thị thông tin giá cước trong return JSX
+// Thay thế phần hiển thị giá cước hiện tại bằng:
+    const shippingInfo = calculateShippingPrice(
+        formData.weight,
+        formData.length,
+        formData.width,
+        formData.height,
+        formData.orderType
+    );
 
     // Hàm cập nhật giá trị của từng trường
     const handleInputChange = (e, index = null, fieldName = null) => {
@@ -102,7 +163,7 @@ const CreateOrder = () => {
     const onsubmit = async (e) => {
         const finalFormData = {
             ...formData,
-            finalPrice: formData.totalPrice+20000,
+            finalPrice: formData.totalPrice,
             // Đảm bảo các giá trị kích thước không null
             length: formData.length || 0.0,
             width: formData.width || 0.0,
@@ -701,14 +762,24 @@ const CreateOrder = () => {
                                 <Grid container className={classes.detailWrap} spacing={2}>
                                     <Grid item xs={4}>
                                         <p style={{fontWeight: 'bold'}}>
-                                            Tiền thu hộ: {formData.totalPrice}đ
+                                            Tiền thu hộ: {formData.totalPrice.toLocaleString()}đ
                                         </p>
                                     </Grid>
                                     <Grid item xs={4}>
-                                        <p style={{fontWeight: 'bold'}}> Tổng cước: 20000đ</p>
+                                        <p style={{fontWeight: 'bold'}}>
+                                            Tổng cước: {formData.shippingPrice.toLocaleString()}đ
+                                        </p>
+                                        <p style={{fontSize: '0.8em', color: '#666'}}>
+                                            Trọng lượng tính cước: {shippingInfo.chargeableWeight}kg
+                                            {shippingInfo.chargeableWeight > formData.weight &&
+                                                ` (Thể tích: ${shippingInfo.volumetricWeight}kg)`
+                                            }
+                                        </p>
                                     </Grid>
                                     <Grid item xs={4}>
-                                        <p style={{fontWeight: 'bold'}}> Tiền thu người gửi: {20000}đ </p>
+                                        <p style={{fontWeight: 'bold'}}>
+                                            Tiền thu người gửi: {formData.shippingPrice.toLocaleString()}đ
+                                        </p>
                                     </Grid>
                                 </Grid>
 
