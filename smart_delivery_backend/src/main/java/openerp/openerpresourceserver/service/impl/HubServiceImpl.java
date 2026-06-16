@@ -2,6 +2,7 @@ package openerp.openerpresourceserver.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import openerp.openerpresourceserver.cache.RedisCacheService;
 import openerp.openerpresourceserver.entity.Hub;
 import openerp.openerpresourceserver.repository.HubRepo;
 import openerp.openerpresourceserver.repository.ShipperRepo;
@@ -25,12 +26,14 @@ public class HubServiceImpl implements HubService {
     private HubRepo hubRepo;
     @Autowired
     private ShipperRepo shipperRepo;
-
+    @Autowired
+    private RedisCacheService redisCacheService;
 
 
     @Override
     @Transactional
     public Hub createHub(HubWithBaysDto request){
+        redisCacheService.deleteKey(RedisCacheService.ALL_HUB_KEY);
         log.info(String.format("alofds"));
         log.info(String.format("daodkao"));
         log.info("Dsad"+request.getId());
@@ -57,7 +60,12 @@ public class HubServiceImpl implements HubService {
 
         @Override
         public List<HubGeneral> getAllHubGeneral(){
-            List<Hub> response = hubRepo.findAll();
+            List<Hub> response = redisCacheService.getCachedListObject(RedisCacheService.ALL_HUB_KEY, Hub.class);
+            if (response == null) {
+                response = hubRepo.findAll();
+                redisCacheService.setCachedValueWithExpire(RedisCacheService.ALL_HUB_KEY, response, 1800);
+            }
+
             return response.stream().map(hub -> new HubGeneral(hub)).collect(Collectors.toList());
         }
 
@@ -65,6 +73,8 @@ public class HubServiceImpl implements HubService {
     @Override
     @Transactional
     public Hub updateHub(HubWithBaysDto request) {
+        redisCacheService.deleteKey(RedisCacheService.ALL_HUB_KEY);
+
         UUID hubId = UUID.fromString(request.getId());
         // Fetch the existing hub from the database
         Optional<Hub> existingHubOpt = hubRepo.findById(hubId);
@@ -131,6 +141,7 @@ public class HubServiceImpl implements HubService {
     @Override
     @Transactional
     public Hub deleteHub(String hubId) {
+        redisCacheService.deleteKey(RedisCacheService.ALL_HUB_KEY);
         Optional<Hub> existingHubOpt = hubRepo.findById(UUID.fromString(hubId));
         if (existingHubOpt.isEmpty()) {
             throw new RuntimeException("Hub not found with id: " + hubId);

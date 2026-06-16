@@ -14,7 +14,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RedisCacheService {
     public static final String ALL_ORDER_KEY = "ORDERS";
-    public static final String ALL_HUB_KEY = "HUB";
+    public static final String ALL_HUB_KEY = "HUBS";
+    public static final String ALL_ROUTE_KEY = "ROUTES";
+
     public static final int DEFAULT_EXPIRE_TIME_IN_MINUTES = 15;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -70,5 +72,16 @@ public class RedisCacheService {
             log.warn(String.format("Can not get cache with key %s", key));
         }
         return null;
+    }
+
+    /**
+     * -> THÊM MỚI: Phương thức để xóa một key khỏi cache.
+     * Rất quan trọng để đảm bảo tính nhất quán của dữ liệu.
+     * @param key Key cần xóa (chưa có prefix).
+     */
+    public void deleteKey(String key) {
+        String fullKey = SMDELI_CACHE_PREFIX + key;
+        redisTemplate.delete(fullKey);
+        log.info("Invalidated/Deleted cache for key {}", fullKey);
     }
 }

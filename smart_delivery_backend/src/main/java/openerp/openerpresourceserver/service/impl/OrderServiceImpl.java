@@ -153,7 +153,7 @@ public class OrderServiceImpl implements OrderService {
     // Get all orders method
     @Override
     public List<OrderSummaryDTO> getAllOrders() {
-        List<Order> orderList = getAllOrdersInCacheElseDatabase();
+        List<Order> orderList  = orderRepo.findAll();
         List<OrderSummaryDTO> orderSummaries = new ArrayList<>();
         for (Order order : orderList) {
             orderSummaries.add(new OrderSummaryDTO(order));
@@ -161,18 +161,7 @@ public class OrderServiceImpl implements OrderService {
         return orderSummaries;
     }
 
-    public List<Order> getAllOrdersInCacheElseDatabase() {
-        List<Order> orderList = redisCacheService.getCachedListObject(RedisCacheService.ALL_ORDER_KEY, Order.class);
 
-        if (orderList == null) {
-            orderList = orderRepo.findAll();
-            redisCacheService.setCachedValueWithExpire(RedisCacheService.ALL_ORDER_KEY, orderList, RedisCacheService.DEFAULT_EXPIRE_TIME_IN_MINUTES);
-            return orderList;
-
-        }
-        // Nếu không có trong cache, lấy từ database và lưu vào cache
-        return orderList;
-    }
 
     @Override
     public List<OrderSummaryDTO> getAllOrdersByHubIdToday(UUID hubId) {

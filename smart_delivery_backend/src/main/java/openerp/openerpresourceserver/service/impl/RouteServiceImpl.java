@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import openerp.openerpresourceserver.cache.RedisCacheService;
 import openerp.openerpresourceserver.dto.RouteDto;
 import openerp.openerpresourceserver.dto.RouteStopDto;
 import openerp.openerpresourceserver.dto.VehicleDto;
@@ -31,6 +32,7 @@ public class RouteServiceImpl implements RouteService {
     private final RouteScheduleRepository routeScheduleRepository;
     private final VehicleRepository vehicleRepository;
     private final ScheduleVehicleAssignmentRepository scheduleVehicleAssignmentRepository;
+    private final RedisCacheService redisCacheService;
 
     private final RouteStopRepository routeStopRepository;
     private final HubRepo hubRepo;
@@ -42,6 +44,8 @@ public class RouteServiceImpl implements RouteService {
     @Override
     @Transactional
     public RouteDto createRoute(RouteDto routeDto) {
+        // Xóa cache trước khi thực hiện thay đổi
+        redisCacheService.deleteKey(RedisCacheService.ALL_ROUTE_KEY);
         System.out.println("routeid" + routeDto.getRouteId());
         if (routeDto.getRouteId() != null) {
             Route route = routeMapper.routeDtoToRoute(routeDto);
@@ -95,6 +99,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     @Transactional
     public Route updateRoute(UUID routeId, Route routeDetails, List<RouteStop> stops) {
+        redisCacheService.deleteKey(RedisCacheService.ALL_ROUTE_KEY);
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() -> new NotFoundException("Route not found"));
 
@@ -159,7 +164,21 @@ public class RouteServiceImpl implements RouteService {
      */
     @Override
     public List<Route> getAllRoutes() {
-        return routeRepository.findAll();
+
+        // Cố gắng lấy từ cache trước
+        List<Route> cachedRoutes = redisCacheService.getCachedListObject(RedisCacheService.ALL_ROUTE_KEY, Route.class);
+        if (cachedRoutes != null) {
+            log.info("Cache hit for ALL_ROUTE_KEY. Returning cached routes.");
+            return cachedRoutes;
+        }
+
+
+        List<Route> dbRoutes = routeRepository.findAll();
+
+        // Lưu vào cache để sử dụng cho lần sau
+        redisCacheService.setCachedValueWithExpire(RedisCacheService.ALL_ROUTE_KEY, dbRoutes, 1800);
+
+        return dbRoutes;
     }
 
     /**
@@ -187,6 +206,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     @Transactional
     public void deleteRoute(UUID routeId) {
+        redisCacheService.deleteKey(RedisCacheService.ALL_ROUTE_KEY);
         if (!routeRepository.existsById(routeId)) {
             throw new NotFoundException("Route not found");
         }
